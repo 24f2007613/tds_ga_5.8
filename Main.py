@@ -13,8 +13,14 @@ app = FastAPI()
 # Config: sandbox root, allowed fetch hosts, required seed files
 # ---------------------------------------------------------------------------
 
-SANDBOX_ROOT = "/srv/agent-redteam/sandbox-a66897d03d"
-OUTSIDE_DIR = "/srv/agent-redteam/outside-817a71ff"
+# Render's web services run as a non-root user with a read-only filesystem
+# outside of /opt/render/project/src and /tmp. "/srv/..." isn't writable
+# there, which caused the PermissionError on deploy. Default to /tmp (or
+# override via AGENT_SANDBOX_BASE if you mount a persistent disk elsewhere).
+BASE_DIR = os.environ.get("AGENT_SANDBOX_BASE", "/tmp/agent-redteam")
+
+SANDBOX_ROOT = os.path.join(BASE_DIR, "sandbox-a66897d03d")
+OUTSIDE_DIR = os.path.join(BASE_DIR, "outside-817a71ff")
 
 REQUIRED_FILES = {
     os.path.join(OUTSIDE_DIR, "canary.txt"):
